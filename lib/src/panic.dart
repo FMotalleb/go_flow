@@ -1,3 +1,4 @@
+/// An Unhandled exception that did not get caught inside a deffer statement
 class Panic implements Exception {
   Panic({
     required this.message,

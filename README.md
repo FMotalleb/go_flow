@@ -1,39 +1,57 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+## Go Flow
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
+This package aims to bring a deferred execution mechanism similar to Go's defer statement into the Dart programming language. This mechanism allows you to schedule code to run when a certain scope or function exits, ensuring that necessary cleanup or finalization tasks are performed regardless of how the scope exits (either normally or due to an error).
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
+this package provides you with two functions for use within your application:
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+1. `syncGoFlow`
+2. `asyncGoFlow`
 
-## Features
+As a simple example:
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
-
-```dart
-const like = 'sample';
+```go
+func main() {
+    file := File("test")
+    defer:
+        file.Close()
+    file.Write("text")
+}
 ```
 
-## Additional information
+This can be implemented using this package as:
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+```dart
+syncGoFlow((defer) {
+  final io = File("test").openSync(mode: FileMode.append);
+  defer((result, recover) {
+    io.closeSync();
+  });
+  io.writeStringSync('text');
+});
+```
+
+The `result` and `recover` parameters given in the defer statement are not lazy, but they are functions, and once you call them, they will return null afterward. So, if you call `result` inside a defer statement, you have to return something if you don't want to receive null.
+
+### Execution order
+
+One of the key features of this mechanism is the execution order of deferred actions, which follows a Last-In-First-Out (LIFO) pattern.
+
+>the LIFO principle means that the order in which deferred actions are executed is the reverse of the order in which they are defined. The most recently defined deferred action will be the first one to execute when the scope exits, and the earliest defined deferred action will be the last one to execute.
+
+```dart
+syncGoFlow((defer) {
+  // This will be executed last when the scope exits
+  defer((result, recover) {
+    // Clean up or finalize action
+  });
+  
+  // ... Other code and defer statements ...
+  
+  // This will be executed first when the scope exits
+  defer((result, recover) {
+    // Clean up or finalize action
+  });
+});
+```
+
+This order ensures that the most recently defined deferred action has the opportunity to perform any cleanup or finalization before the earlier defined actions.
