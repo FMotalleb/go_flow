@@ -1,6 +1,6 @@
 name: go_flow
 description: A simple implementation of go-lang's deffer statement, bringing it into dart-lang
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/fmotalleb/go_flow
 
 environment:
