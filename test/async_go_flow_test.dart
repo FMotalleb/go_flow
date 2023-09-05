@@ -47,7 +47,7 @@ void main() {
     test(
       'Check Defer statement with exception thrown',
       () {
-        Future<int?> count() => asyncGoFlow<int>(
+        Future<int?> count() async => asyncGoFlow<int>(
               (defer) {
                 defer(
                   (result, recover) {

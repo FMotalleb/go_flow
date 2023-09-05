@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'panic.dart';
 import 'typedefs.dart';
 
@@ -32,7 +34,7 @@ class SyncGoFlow<T> {
     try {
       _result = task(_pushDiffer);
       _error = null;
-    } catch (e) {
+    } on Object catch (e) {
       _result = null;
       _error = e;
     }
@@ -44,7 +46,7 @@ class SyncGoFlow<T> {
               _recover,
             ) ??
             _result;
-      } catch (e) {
+      } on Object catch (e) {
         _error = e;
       }
     }

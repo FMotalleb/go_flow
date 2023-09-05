@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'dart:async';
 
 import 'panic.dart';
@@ -35,7 +37,7 @@ class AsyncGoFlow<T> {
     try {
       _result = await task(_pushDiffer);
       _error = null;
-    } catch (e) {
+    } on Object catch (e) {
       _result = null;
       _error = e;
     }
@@ -47,7 +49,7 @@ class AsyncGoFlow<T> {
               _recover,
             ) ??
             _result;
-      } catch (e) {
+      } on Object catch (e) {
         _error = e;
       }
     }
