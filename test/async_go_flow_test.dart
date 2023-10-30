@@ -45,6 +45,30 @@ void main() {
       },
     );
     test(
+      'Check Nested Defer should panic',
+      () async {
+        Future<int?> count() async => asyncGoFlow<int>(
+              (defer) async {
+                defer(
+                  (result, recover) async {
+                    defer(
+                      (result, recover) async {
+                        await dummyItem.dummyASync();
+                        return null;
+                      },
+                    );
+                    await dummyItem.dummyASync();
+                    return null;
+                  },
+                );
+                await dummyItem.dummyASync();
+                return dummyItem.counter;
+              },
+            );
+        expect(count, throwsA(const TypeMatcher<Panic>()));
+      },
+    );
+    test(
       'Check Defer statement with exception thrown',
       () {
         Future<int?> count() async => asyncGoFlow<int>(

@@ -4,13 +4,22 @@ import 'panic.dart';
 import 'typedefs.dart';
 
 class SyncGoFlow<T> {
-  SyncGoFlow() : _differedStack = [];
+  SyncGoFlow()
+      : _deferredStack = [],
+        _canDefer = true;
   static T? handle<T>(
     SyncDefferable<T> task,
   ) =>
       SyncGoFlow<T>().deferredCall(task);
-  final List<SyncDefer<T>> _differedStack;
-  void _pushDiffer(SyncDefer<T> task) => _differedStack.add(task);
+  final List<SyncDefer<T>> _deferredStack;
+  void _pushDefer(SyncDefer<T> task) {
+    assert(_canDefer, '''
+Do not use defer inside a defer.
+To use defer inside a defer you have to create new flow.''');
+    _deferredStack.insert(0, task);
+  }
+
+  bool _canDefer;
   Object? _error;
   E? _recover<E extends Object?>() {
     final err = _error;
@@ -32,16 +41,17 @@ class SyncGoFlow<T> {
     SyncDefferable<T> task,
   ) {
     try {
-      _result = task(_pushDiffer);
+      _result = task(_pushDefer);
       _error = null;
     } on Object catch (e) {
       _result = null;
       _error = e;
     }
+    _canDefer = false;
 
-    for (final differ in _differedStack.reversed) {
+    for (final defer in _deferredStack) {
       try {
-        _result = differ(
+        _result = defer(
               _getResult,
               _recover,
             ) ??
